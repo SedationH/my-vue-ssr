@@ -1,64 +1,73 @@
 const express = require('express')
-const serverBundle = require('./dist/vue-ssr-server-bundle.json')
-const template = require('fs').readFileSync(
-  './index.template.html',
-  'utf-8'
-)
-const clientManifest = require('./dist/vue-ssr-client-manifest.json')
+const fs = require('fs')
 const {
   createBundleRenderer,
 } = require('vue-server-renderer')
+const setupDevServer = require('./build/setup-dev-server')
+const isProd = process.env.NODE_ENV === 'production'
 
-// const renderer = require('vue-server-renderer').createRenderer(
-//   {
-//     template: require('fs').readFileSync(
-//       './index.template.html',
-//       'utf-8'
-//     ),
-//   }
-// )
+const service = express()
 
-// 第 1 步：创建一个 renderer
-const renderer = createBundleRenderer(serverBundle, {
-  runInNewContext: false, // https://ssr.vuejs.org/zh/api/#runinnewcontext
-  template, // （可选）页面模板
-  clientManifest, // （可选）客户端构建 manifest
-})
-// 👆需要的内容是通过webpack构建好的
+service.use('/dist', express.static('./dist'))
 
-// 第2步：创建 service
-const service = require('express')()
+let onReady, renderer
+// 根据模式选择 renderer 的生成方式
+if (isProd) {
+  const template = fs.readFileSync(
+    './index.template.html',
+    'utf-8'
+  )
+  const serverBundle = require('./dist/vue-ssr-server-bundle.json')
+  const clientManifest = require('./dist/vue-ssr-client-manifest.json')
+  renderer = createBundleRenderer(serverBundle, {
+    template,
+    clientManifest,
+  })
+} else {
+  // 开发模式 -> 监视打包构建 -> 重新生成 Renderer 渲染器
+  onReady = setupDevServer(
+    service,
+    (serverBundle, template, clientManifest) => {
+      // 通过在setup-dev-server中调用回调来生成这个module中的renderer
+      renderer = createBundleRenderer(serverBundle, {
+        template,
+        clientManifest,
+      })
+    }
+  )
+}
 
 const context = {
-  title: 'vue ssr demo',
+  title: 'SedationH',
   meta: `
-        <meta name="keyword" content="vue,ssr">
-        <meta name="description" content="vue srr demo">
-    `,
+    <meta name="description" content="ssr demo">
+  `,
 }
-service.use('/dist', express.static('./dist'))
-service.get('/', (req, res) => {
-  // 设置响应头，解决中文乱码
-  res.setHeader('Content-Type', 'text/html;charset=utf8')
 
-  // 第 3 步：将 Vue 实例渲染为 HTML
-  // 这里的Vue实例，使用的是src/entry-server.js 中挂载的Vue实例
-  // 这里无需传入Vue实例，因为在执行 bundle 时已经自动创建过。
-  // 注意这里创建的renderer与HEAD^中的renderer是不一样的
-  renderer.renderToString(context, (err, html) => {
-    // 异常时，抛500，返回错误信息，并阻止向下执行
-    if (err) {
-      console.log(err)
-      res.status(500).end('Internal Server Error')
-      return
-    }
-
-    // 返回HTML, 该html的值 将是注入应用程序内容的完整页面
+const render = async (req, res) => {
+  try {
+    const html = await renderer.renderToString(context)
+    res.setHeader('Content-Type', 'text/html; charset=utf8')
     res.end(html)
-  })
-})
+  } catch (err) {
+    console.log(err)
+    res.status(500).end('Internal Server Error.')
+  }
+}
 
-// 绑定并监听指定主机和端口上的连接
+// onReady 只是刚开始pending一下，后面其实都是fulfilled了，
+// 只是每次访问使用不同的renderer产生的结果不一样
+service.get(
+  '*',
+  isProd
+    ? render
+    : async (req, res) => {
+        // 在开发模式下 renderer 是异步生成的 需要等待
+        await onReady
+        render(req, res)
+      }
+)
+
 service.listen(3000, () =>
-  console.log(`service listening at http://localhost:3000`)
+  console.log('http://localhost:3000')
 )
