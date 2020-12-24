@@ -9,12 +9,23 @@ const {
   createBundleRenderer,
 } = require('vue-server-renderer')
 
+// const renderer = require('vue-server-renderer').createRenderer(
+//   {
+//     template: require('fs').readFileSync(
+//       './index.template.html',
+//       'utf-8'
+//     ),
+//   }
+// )
+
 // 第 1 步：创建一个 renderer
 const renderer = createBundleRenderer(serverBundle, {
   runInNewContext: false, // https://ssr.vuejs.org/zh/api/#runinnewcontext
   template, // （可选）页面模板
   clientManifest, // （可选）客户端构建 manifest
 })
+// 👆需要的内容是通过webpack构建好的
+
 // 第2步：创建 service
 const service = require('express')()
 
@@ -33,7 +44,7 @@ service.get('/', (req, res) => {
   // 第 3 步：将 Vue 实例渲染为 HTML
   // 这里的Vue实例，使用的是src/entry-server.js 中挂载的Vue实例
   // 这里无需传入Vue实例，因为在执行 bundle 时已经自动创建过。
-  // 现在我们的服务器与应用程序已经解耦！
+  // 注意这里创建的renderer与HEAD^中的renderer是不一样的
   renderer.renderToString(context, (err, html) => {
     // 异常时，抛500，返回错误信息，并阻止向下执行
     if (err) {
