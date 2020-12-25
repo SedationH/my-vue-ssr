@@ -19,6 +19,7 @@ module.exports = (service, callback) => {
 
   const update = () => {
     if (template && serverBundle && clientManifest) {
+      console.log('invoke update')
       ready()
       callback(serverBundle, template, clientManifest)
     }
@@ -40,8 +41,27 @@ module.exports = (service, callback) => {
     template = fs.readFileSync(templatePath, 'utf-8')
     update()
   })
-  serverBundle = require('../dist/vue-ssr-server-bundle.json')
-  clientManifest = require('../dist/vue-ssr-client-manifest.json')
-  update()
+
+  // 监视构建 serverBundle -> 调用 update -> 更新 Renderer 渲染器
+  const serverConfig = require('./webpack.server.config')
+  const serverCompiler = webpack(serverConfig)
+  serverCompiler.watch({}, (err, stats) => {
+    // when in to callback 根据 serverConfig生成的文件
+    // 已经创建好了
+
+    // wepack配置问题
+    if (err) throw err
+    // 源代码问题
+    if (stats.hasErrors()) return
+    console.log('success')
+    serverBundle = JSON.parse(
+      fs.readFileSync(
+        resolve('../dist/vue-ssr-server-bundle.json'),
+        'utf-8'
+      )
+    )
+    update()
+  })
+
   return onReady
 }
