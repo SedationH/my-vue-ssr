@@ -62,4 +62,7 @@ module.exports = {
     new VueLoaderPlugin(),
     new FriendlyErrorsWebpackPlugin(),
   ],
+  infrastructureLogging: {
+    level: 'none',
+  },
 }

@@ -2,6 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const chokidar = require('chokidar')
 const webpack = require('webpack')
+const devMiddleware = require('webpack-dev-middleware')
 
 const resolve = file => path.resolve(__dirname, file)
 
@@ -45,17 +46,12 @@ module.exports = (service, callback) => {
   // 监视构建 serverBundle -> 调用 update -> 更新 Renderer 渲染器
   const serverConfig = require('./webpack.server.config')
   const serverCompiler = webpack(serverConfig)
-  serverCompiler.watch({}, (err, stats) => {
-    // when in to callback 根据 serverConfig生成的文件
-    // 已经创建好了
-
-    // wepack配置问题
-    if (err) throw err
-    // 源代码问题
-    if (stats.hasErrors()) return
-    console.log('success')
+  const serverCompilerDevMiddleware = devMiddleware(
+    serverCompiler
+  )
+  serverCompiler.hooks.done.tap('server', () => {
     serverBundle = JSON.parse(
-      fs.readFileSync(
+      serverCompilerDevMiddleware.context.outputFileSystem.readFileSync(
         resolve('../dist/vue-ssr-server-bundle.json'),
         'utf-8'
       )
@@ -63,5 +59,18 @@ module.exports = (service, callback) => {
     update()
   })
 
+  // 监视构建 clientManifest -> 调用 update -> 更新 Renderer 渲染器
+  const clientConfig = require('./webpack.client.config')
+  const clientCompiler = webpack(clientConfig)
+  const clientDevMiddleware = devMiddleware(clientCompiler)
+  clientCompiler.hooks.done.tap('client', () => {
+    clientManifest = JSON.parse(
+      clientDevMiddleware.context.outputFileSystem.readFileSync(
+        resolve('../dist/vue-ssr-client-manifest.json'),
+        'utf-8'
+      )
+    )
+    update()
+  })
   return onReady
 }
