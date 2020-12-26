@@ -72,5 +72,10 @@ module.exports = (service, callback) => {
     )
     update()
   })
+
+  // 重要！！！将 clientDevMiddleware 挂载到 Express 服务中
+  // 提供对其内部内存中数据的访问
+  // 服务端通过内存操作 客户端通过http服务交互来获取
+  service.use(clientDevMiddleware)
   return onReady
 }

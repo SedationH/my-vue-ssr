@@ -10,7 +10,7 @@ export default {
   name: 'App',
   data() {
     return {
-      message: '',
+      message: 'dsd',
     }
   },
   methods: {
