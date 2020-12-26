@@ -3,8 +3,11 @@ import { createApp } from './app'
 // 利用 async Promise 进行改造
 export default async context => {
   const { router, app } = createApp()
+  const meta = app.$meta()
   router.push(context.url)
-  console.log(context.url)
+  // context 中的信息可以被index.template.html使用
+  context.meta = meta
+  // 因为进入的页面可能是异步导入的
   await new Promise(router.onReady.bind(router))
   return app
 }

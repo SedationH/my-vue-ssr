@@ -8,11 +8,9 @@
 export default {
   name: 'AboutPage',
   metaInfo: {
-    title: '关于'
-  }
+    title: '关于',
+  },
 }
 </script>
 
-<style>
-
-</style>
+<style></style>
