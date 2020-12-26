@@ -2,6 +2,7 @@
   <div id="app">
     <h1 @click="onClick">{{ message }}</h1>
     <input type="text" v-model="message" />
+    this is a good idea
   </div>
 </template>
 
@@ -10,7 +11,7 @@ export default {
   name: 'App',
   data() {
     return {
-      message: 'dsd',
+      message: 'ddsdsddsd',
     }
   },
   methods: {

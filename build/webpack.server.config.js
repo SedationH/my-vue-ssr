@@ -2,16 +2,17 @@ const { merge } = require('webpack-merge')
 const nodeExternals = require('webpack-node-externals')
 const baseConfig = require('./webpack.base.config.js')
 const VueSSRServerPlugin = require('vue-server-renderer/server-plugin')
+const path = require('path')
+const resolve = file => path.resolve(__dirname, file)
 
 module.exports = merge(baseConfig, {
   // 将 entry 指向应用程序的 server entry 文件
-  entry: './src/entry-server.js',
+  entry: resolve('../src/entry-server.js'),
   // 这允许 webpack 以 Node 适用方式处理模块加载
   // 并且还会在编译 Vue 组件时，
   // 告知 `vue-loader` 输送面向服务器代码(server-oriented code)。
   target: 'node',
   output: {
-    filename: 'server-bundle.js',
     // 此处告知 server bundle 使用 Node 风格导出模块(Node-style exports)
     libraryTarget: 'commonjs2',
   },

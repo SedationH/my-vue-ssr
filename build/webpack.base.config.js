@@ -10,7 +10,10 @@ module.exports = {
   output: {
     path: resolve('../dist/'),
     publicPath: '/dist/',
-    filename: '[name].[chunkhash].js',
+    filename: isProd
+      ? '[name].[chunkhash].js'
+      : // 考虑到热更新模式下一致的名字
+        '[name].js',
   },
   resolve: {
     alias: {

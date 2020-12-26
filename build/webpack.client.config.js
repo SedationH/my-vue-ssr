@@ -5,9 +5,7 @@ const path = require('path')
 const resolve = file => path.resolve(__dirname, file)
 
 module.exports = merge(baseConfig, {
-  entry: {
-    app: './src/entry-client.js',
-  },
+  entry: resolve('../src/entry-client.js'),
   module: {
     rules: [
       // ES6 转 ES5 客户端考虑兼容性
