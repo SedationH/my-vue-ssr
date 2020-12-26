@@ -95,3 +95,101 @@ serverCompiler.hooks.done.tap('server', () => {
 ```
 
 serverCompilerDevMiddleware 的api有变化 看runtime来找一下
+
+
+
+再搞下热更新 这里没啥坑
+
+
+
+编写通用环境的注意事项
+
+https://ssr.vuejs.org/guide/universal.html#data-reactivity-on-the-server
+
+
+
+配置vue router对ssr的适配
+
+https://ssr.vuejs.org/guide/routing.html#routing-with-vue-router
+
+
+
+对组件异步导入的理解
+
+```js
+routes: [
+  {
+    path: '/',
+    name: 'home',
+    component: Home,
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: () => import('@/pages/About'),
+  },
+  {
+    path: '/posts',
+    name: 'post-list',
+    component: () => import('@/pages/Posts'),
+  },
+  {
+    path: '*',
+    name: '404',
+    component: () => import('@/pages/404'),
+  },
+],
+})
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="description" content="ssr demo" />
+
+    <link
+      rel="preload"
+      href="/dist/server-bundle.js"
+      as="script"
+    />
+    <link rel="prefetch" href="/dist/0.server-bundle.js" />
+    <link rel="prefetch" href="/dist/1.server-bundle.js" />
+    <link rel="prefetch" href="/dist/2.server-bundle.js" />
+  </head>
+
+  <title>SedationH</title>
+  <body>
+    <div id="app" data-server-rendered="true">
+      <ul>
+        <li>
+          <a
+            href="/"
+            aria-current="page"
+            class="router-link-exact-active router-link-active"
+            >Home</a
+          >
+        </li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/posts">Posts</a></li>
+        <li><a href="/xxxx">404</a></li>
+      </ul>
+      <div><h1>Home Page</h1></div>
+    </div>
+    <script src="/dist/server-bundle.js" defer></script>
+  </body>
+</html>
+
+```
+
+
+
+preload -> 预加载 不阻塞
+
+prefetch -> 预请求 不稳定 当浏览器空闲时
+
+![image-20201226160414808](http://picbed.sedationh.cn/image-20201226160414808.png)
+
+
+
+`<link rel="prefetch">` has been supported in browsers for a long time, but it is intended for prefetching resources that will be used in the ***next\*** navigation/page load (e.g. when you go to the next page). This is fine, but isn't useful for the current page! In addition, browsers will give `prefetch` resources a lower priority than `preload` ones — the current page is more important than the next. See [Link prefetching FAQ](https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ) for more details.

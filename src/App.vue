@@ -1,8 +1,22 @@
 <template>
   <div id="app">
-    <h1 @click="onClick">{{ message }}</h1>
-    <input type="text" v-model="message" />
-    this is a good idea
+    <ul>
+      <li>
+        <router-link to="/">Home</router-link>
+      </li>
+      <li>
+        <router-link to="/about">About</router-link>
+      </li>
+      <li>
+        <router-link to="/posts">Posts</router-link>
+      </li>
+      <li>
+        <router-link to="/xxxx">404</router-link>
+      </li>
+    </ul>
+
+    <!-- 路由出口 -->
+    <router-view />
   </div>
 </template>
 

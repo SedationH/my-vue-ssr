@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="description" content="ssr demo" />
+
+    <link
+      rel="preload"
+      href="/dist/server-bundle.js"
+      as="script"
+    />
+    <link rel="prefetch" href="/dist/0.server-bundle.js" />
+    <link rel="prefetch" href="/dist/1.server-bundle.js" />
+    <link rel="prefetch" href="/dist/2.server-bundle.js" />
+  </head>
+
+  <title>SedationH</title>
+  <body>
+    <div id="app" data-server-rendered="true">
+      <ul>
+        <li>
+          <a
+            href="/"
+            aria-current="page"
+            class="router-link-exact-active router-link-active"
+            >Home</a
+          >
+        </li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/posts">Posts</a></li>
+        <li><a href="/xxxx">404</a></li>
+      </ul>
+      <div><h1>Home Page</h1></div>
+    </div>
+    <script src="/dist/server-bundle.js" defer></script>
+  </body>
+</html>

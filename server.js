@@ -37,15 +37,15 @@ if (isProd) {
   )
 }
 
-const context = {
-  title: 'SedationH',
-  meta: `
-    <meta name="description" content="ssr demo">
-  `,
-}
-
 const render = async (req, res) => {
   try {
+    const context = {
+      title: 'SedationH',
+      meta: `
+        <meta name="description" content="ssr demo">
+      `,
+      url: req.url,
+    }
     const html = await renderer.renderToString(context)
     res.setHeader('Content-Type', 'text/html; charset=utf8')
     res.end(html)
